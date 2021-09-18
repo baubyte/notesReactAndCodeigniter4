@@ -1,0 +1,55 @@
+version: "3.7"
+services: 
+  db:
+    image: mysql:5.7
+    container_name: notes-db
+    restart: unless-stopped
+    environment: 
+      MYSQL_ROOT_PASSWORD: "${PASSWORD_ROOT_MYSQL}"
+    ports: 
+      - "${PORT_MYSQL}:3306"
+    volumes: 
+      - ./mysql-data/:/var/lib/mysql
+    networks:
+      - notes
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: notes-pma
+    restart: unless-stopped
+    ports:
+      - "${PORT_PHPMYADMIN}:80"
+    environment:
+      PMA_ARBITRARY: 0
+      PMA_HOST: notes-db
+      PMA_PORT: 3306
+    networks:
+      - notes
+    depends_on: 
+      - db
+  app:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile
+      args:
+        uid: 1000
+    image: notes-dev
+    container_name: notes-web
+    restart: unless-stopped
+    ports: 
+      - "${PORT_APACHE_WEB}:80"
+    environment:
+      - APACHE_RUN_USER=#1000
+      - APACHE_RUN_GROUP=#1000
+    volumes: 
+      - ./notes-src/:/var/www
+      - ./notes-src/public:/var/www/html
+    networks:
+      - notes
+    depends_on: 
+      - db
+networks:
+ notes:
+    driver: bridge
+volumes: 
+  mysql-data:
+  notes-src:

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+docker exec -it notes-web bash -c "sudo -u devbaubyte /bin/bash"
